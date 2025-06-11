@@ -1,0 +1,25 @@
+"","Metric","n","%","Mean","Min/Max"
+"1","Female",12760,54.2,0.542470878326673,NA
+"2","Male",10762,45.8,0.457529121673327,NA
+"3","Age",23522,NA,48.2822038942267,"17/102"
+"4","People in Household",23445,NA,2.90671785028791,"1/13"
+"5","Household with Children",9337,39.7,0.39694753847462,NA
+"6","Single Parent Household",817,3.5,0.0347334410339257,NA
+"7","Years of Education",21911,NA,12.4007804299211,"7/18"
+"8","Gross Salary Year",23522,NA,16775.7678773058,"0/269424.94"
+"9","Gross Salay Month",23522,NA,1771.88543951769,"0/35260.91"
+"10","Employed Full-Time",8700,37,0.369866507950004,NA
+"11","Employed Part-Time",3481,14.8,0.14798911657172,NA
+"12","Training Apprenticeship",695,3,0.029546807244282,NA
+"13","Irregular employment or in marginal",1446,6.1,0.0614743644247938,NA
+"14","Unemployed",9169,39,0.38980528866593,NA
+"15","Working in Agriculture",176,0.7,0.00748235694243687,NA
+"16","Working in Manufacturing",2599,11,0.110492305076099,NA
+"17","Working in Energy",214,0.9,0.00909786582773574,NA
+"18","Working in Constructions",674,2.9,0.0286540260181957,NA
+"19","Working in Trade",1584,6.7,0.0673412124819318,NA
+"20","Working in Traffic",578,2.5,0.0245727404132302,NA
+"21","Working in Gastronomy & Hotel",457,1.9,0.0194286200153048,NA
+"22","Working in Telecommunication",493,2.1,0.0209591021171669,NA
+"23","Working in Services",2174,9.2,0.0924241135957827,NA
+"24","Working in Public Administration, Education and Health",4637,19.7,0.19713459739818,NA
