@@ -1,10 +1,12 @@
+# Final code for paper
+# author: Marc Peter
+# date: 14.06.2026
+
 rm(list = ls())
 
 library(dplyr)
 
-
 df <- read.csv("./data/data_SoSe25_mba_class_final.csv", sep = ";", header = TRUE)
-
 
 # Sanitize dataframe column names:
 names(df)[names(df) == "years.of.education"] <- "years_of_education"
@@ -15,7 +17,7 @@ names(df)[names(df) == "gross.salary.month"] <- "gross_salary_month"
 names(df)[names(df) == "subjective.health"] <- "subjective_health"
 names(df)[names(df) == "subjective.life.satisfaction.happiness"] <- "subjective_life_satisfaction"
 
-#### Sanitize malformed / unusual values: ####
+# ----------- Sanitize malformed / unusual values: -------------- #
 # Replace [10] completely satisfied in column "subjective_life_satisfaction" string value 10 and convert the whole column to numeric
 df[df$subjective_life_satisfaction == "[10] completely satisfied", "subjective_life_satisfaction"] <- "10"
 df$subjective_life_satisfaction <- as.numeric(df$subjective_life_satisfaction)
@@ -25,6 +27,7 @@ condition_month_salary <- (!is.na(df$gross_salary_year) & df$gross_salary_year >
 df[condition_month_salary, "gross_salary_month"] <- df[condition_month_salary, "gross_salary_year"] / 12
 
 
+# Helper function to calcluate the mean and format it to "%"
 mean_to_per <- function(value){
     return(round(mean(value, na.rm = TRUE), 3) * 100)
 }
@@ -59,82 +62,82 @@ summarise_df <- function(data_frame){
                     "Working in Public Administration, Education and Health"
                 ),
                 "n" = c(
-                    sum(female, na.rm=TRUE), 
-                    sum(!female, na.rm = TRUE),
-                    sum(!is.na(age), na.rm = TRUE),
-                    sum(!is.na(pers), na.rm = TRUE),
-                    sum(!is.na(pers) & !is.na(children) & children > 0, na.rm=TRUE),
-                    sum(!is.na(pers) & !is.na(children) & children > 0 & pers-children == 1, na.rm=TRUE),
-                    sum(!is.na(years_of_education)),
-                    sum(!is.na(gross_salary_year)),
-                    sum(!is.na(gross_salary_month)),
-                    sum(!is.na(employment_status) & employment_status == 1),
-                    sum(!is.na(employment_status) & employment_status == 2),
-                    sum(!is.na(employment_status) & employment_status == 3),
-                    sum(!is.na(employment_status) & employment_status == 4),
-                    sum(!is.na(employment_status) & employment_status == 5),
-                    sum(!is.na(industry_sector) & industry_sector == 1),
-                    sum(!is.na(industry_sector) & industry_sector == 2),
-                    sum(!is.na(industry_sector) & industry_sector == 3),
-                    sum(!is.na(industry_sector) & industry_sector == 4),
-                    sum(!is.na(industry_sector) & industry_sector == 5),
-                    sum(!is.na(industry_sector) & industry_sector == 6),
-                    sum(!is.na(industry_sector) & industry_sector == 7),
-                    sum(!is.na(industry_sector) & industry_sector == 8),
-                    sum(!is.na(industry_sector) & industry_sector == 9),
-                    sum(!is.na(industry_sector) & industry_sector == 10)
+                    paste(sum(female, na.rm=TRUE)), 
+                    paste(sum(!female, na.rm = TRUE)),
+                    paste(sum(!is.na(age), na.rm = TRUE)),
+                    paste(sum(!is.na(pers), na.rm = TRUE)),
+                    paste(sum(!is.na(pers) & !is.na(children) & children > 0, na.rm=TRUE)),
+                    paste(sum(!is.na(pers) & !is.na(children) & children > 0 & pers-children == 1, na.rm=TRUE)),
+                    paste(sum(!is.na(years_of_education))),
+                    paste(sum(!is.na(gross_salary_year))),
+                    paste(sum(!is.na(gross_salary_month))),
+                    paste(sum(!is.na(employment_status) & employment_status == 1)),
+                    paste(sum(!is.na(employment_status) & employment_status == 2)),
+                    paste(sum(!is.na(employment_status) & employment_status == 3)),
+                    paste(sum(!is.na(employment_status) & employment_status == 4)),
+                    paste(sum(!is.na(employment_status) & employment_status == 5)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 1)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 2)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 3)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 4)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 5)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 6)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 7)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 8)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 9)),
+                    paste(sum(!is.na(industry_sector) & industry_sector == 10))
                 ),
                 "%" = c(
-                    mean_to_per(female),
-                    mean_to_per(!female),
-                    NA,
-                    NA,
-                    mean_to_per(!is.na(pers) & !is.na(children) & children > 0),
-                    mean_to_per(!is.na(pers) & !is.na(children) & children > 0 & pers-children == 1),
-                    NA,
-                    NA,
-                    NA,
-                    mean_to_per(!is.na(employment_status) & employment_status == 1),
-                    mean_to_per(!is.na(employment_status) & employment_status == 2),
-                    mean_to_per(!is.na(employment_status) & employment_status == 3),
-                    mean_to_per(!is.na(employment_status) & employment_status == 4),
-                    mean_to_per(!is.na(employment_status) & employment_status == 5),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 1),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 2),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 3),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 4),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 5),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 6),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 7),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 8),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 9),
-                    mean_to_per(!is.na(industry_sector) & industry_sector == 10)
+                    paste(mean_to_per(female)),
+                    paste(mean_to_per(!female)),
+                    paste(NA),
+                    paste(NA),
+                    paste(mean_to_per(!is.na(pers) & !is.na(children) & children > 0)),
+                    paste(mean_to_per(!is.na(pers) & !is.na(children) & children > 0 & pers-children == 1)),
+                    paste(NA),
+                    paste(NA),
+                    paste(NA),
+                    paste(mean_to_per(!is.na(employment_status) & employment_status == 1)),
+                    paste(mean_to_per(!is.na(employment_status) & employment_status == 2)),
+                    paste(mean_to_per(!is.na(employment_status) & employment_status == 3)),
+                    paste(mean_to_per(!is.na(employment_status) & employment_status == 4)),
+                    paste(mean_to_per(!is.na(employment_status) & employment_status == 5)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 1)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 2)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 3)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 4)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 5)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 6)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 7)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 8)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 9)),
+                    paste(mean_to_per(!is.na(industry_sector) & industry_sector == 10))
                 ),
                 "Mean" = c(
-                    mean(female, na.rm = TRUE),
-                    mean(!female, na.rm = TRUE),
-                    mean(age, na.rm = TRUE),
-                    mean(pers, na.rm=TRUE),
-                    mean(!is.na(pers) & !is.na(children) & children > 0, na.rm=TRUE),
-                    mean(!is.na(pers) & !is.na(children) & children > 0 & pers-children == 1, na.rm=TRUE),
-                    mean(years_of_education, na.rm=TRUE),
-                    mean(gross_salary_year, na.rm=TRUE),
-                    mean(gross_salary_month, na.rm=TRUE),
-                    mean(!is.na(employment_status) & employment_status == 1),
-                    mean(!is.na(employment_status) & employment_status == 2),
-                    mean(!is.na(employment_status) & employment_status == 3),
-                    mean(!is.na(employment_status) & employment_status == 4),
-                    mean(!is.na(employment_status) & employment_status == 5),
-                    mean(!is.na(industry_sector) & industry_sector == 1),
-                    mean(!is.na(industry_sector) & industry_sector == 2),
-                    mean(!is.na(industry_sector) & industry_sector == 3),
-                    mean(!is.na(industry_sector) & industry_sector == 4),
-                    mean(!is.na(industry_sector) & industry_sector == 5),
-                    mean(!is.na(industry_sector) & industry_sector == 6),
-                    mean(!is.na(industry_sector) & industry_sector == 7),
-                    mean(!is.na(industry_sector) & industry_sector == 8),
-                    mean(!is.na(industry_sector) & industry_sector == 9),
-                    mean(!is.na(industry_sector) & industry_sector == 10)
+                    paste(mean(female, na.rm = TRUE)),
+                    paste(mean(!female, na.rm = TRUE)),
+                    paste(mean(age, na.rm = TRUE)),
+                    paste(mean(pers, na.rm=TRUE)),
+                    paste(mean(!is.na(pers) & !is.na(children) & children > 0, na.rm=TRUE)),
+                    paste(mean(!is.na(pers) & !is.na(children) & children > 0 & pers-children == 1, na.rm=TRUE)),
+                    paste(mean(years_of_education, na.rm=TRUE)),
+                    paste(mean(gross_salary_year, na.rm=TRUE)),
+                    paste(mean(gross_salary_month, na.rm=TRUE)),
+                    paste(mean(!is.na(employment_status) & employment_status == 1)),
+                    paste(mean(!is.na(employment_status) & employment_status == 2)),
+                    paste(mean(!is.na(employment_status) & employment_status == 3)),
+                    paste(mean(!is.na(employment_status) & employment_status == 4)),
+                    paste(mean(!is.na(employment_status) & employment_status == 5)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 1)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 2)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 3)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 4)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 5)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 6)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 7)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 8)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 9)),
+                    paste(mean(!is.na(industry_sector) & industry_sector == 10))
                 ),
                 "Min/Max" = c(
                     NA,
@@ -225,31 +228,22 @@ cor_satisfaction_salary <- cor(
     rank(df_working_population$gross_salary_year),
     use = "complete.obs", method = "spearman")
 
-df_working_population <- df_working_population %>%
-    mutate(
-        # Create a new temporary column with string labels
-        employment_status_string = case_when(
-            employment_status == 1 ~ "Full-Time",
-            employment_status == 2 ~ "Part-Time",
-            employment_status == 3 ~ "Training or Apprenticeship",
-            employment_status == 4 ~ "Irregular or Marginal",
-            TRUE ~ as.character(employment_status)
-        ))
+# Summarise the distribution of employed people based on gender and the industry sector
+total_n_sector <- nrow(df_working_population %>% filter(!is.na(industry_sector)))
+industry_sector_by_gender <- df_working_population %>%
+    filter(!is.na(industry_sector)) %>%
+    group_by(industry_sector) %>%
+    summarise(
+        "n" = n(),
+        "Sector (%)" = round(n() / total_n_sector * 100, 1),
+        "Male (%)" = round(mean(!female),3) * 100,
+        "Female (%)" = round(mean(female),3) * 100,
+        "Median yearly salary" = round(median(gross_salary_month, na.rm = TRUE)),
+        "Median yearly salary male" = round(median(gross_salary_month[!female], na.rm = TRUE)),
+        "Median yearly salary female" = round(median(gross_salary_month[female], na.rm = TRUE)),
+    )
 
-desired_employment_status <- c(
-    "Full-Time",
-    "Part-Time",
-    "Training or Apprenticeship",
-    "Irregular or Marginal"
-)
-
-df_working_population$employment_status <- factor(
-    df_working_population$employment_status_string,
-    levels = desired_employment_status
-)
-
-df_working_population$employment_status_string <- NULL
-
+write.csv(industry_sector_by_gender, file = "./tables/industry_sector_gender_summary.csv")
 
 # Sumarise the deployment status by gender
 total_n_employment_status <- nrow(df_working_population %>% filter(!is.na(employment_status)))
@@ -274,7 +268,7 @@ df_working_population <- df_working_population %>%
             employment_status == 4 ~ "Irregular or Marginal",
             TRUE ~ as.character(employment_status)
         ),
-        ## 
+        # Group industry sectors with a proportion less than 5% into "Others" 
         industry_sector_string = case_when(
             industry_sector == 2 ~ "Manufacturing",
             industry_sector == 5 ~ "Trade",
@@ -312,14 +306,649 @@ df_working_population$employment_status <- factor(
 df_working_population$industry_sector_string <- NULL
 df_working_population$employment_status_string <- NULL
 
-# Factories relvant columns
-df_working_population$female <- as.factor(as.numeric(df_working_population$female))
+# Create factor based on group data
+df_working_population$female <- as.numeric(df_working_population$female)
+
+cor_female_salary_year <- cor(
+    df_working_population$female,
+    df_working_population$gross_salary_year,
+    use = "complete.obs", method = "spearman")
+
+df_working_population$female <- as.factor(df_working_population$female)
+
 df_working_population$employment_status <- as.factor(df_working_population$employment_status)
 df_working_population$industry_sector <- as.factor(df_working_population$industry_sector)
 df_working_population$employment_status <- as.factor(df_working_population$employment_status)
 
+
 # Relevel to most employed industry sector and "Full-Time" employment status
 df_working_population$industry_sector <- relevel(df_working_population$industry_sector, ref="Administration, Education & Health")
 df_working_population$employment_status <- relevel(df_working_population$employment_status, ref="Full-Time")
+
+# This function creates a summary grouped by each industry sector for comparison
+create_summary_by_industry <- function(){
+    return(df_working_population %>%
+    reframe(
+        tibble(
+            Metric = c(
+                "Persons [n]",
+                "Females [%]",
+                "Median education [years]",
+                "Minimum education [years]",
+                "Maximum education [years]",
+                "Median male education [years]",
+                "Median female education [years]",
+                "Median age [years]",
+                "Minimum age [years]",
+                "Maximum age [years]",
+                "Males employed full-time [%]",
+                "Females employed full-time [%]",
+                "Males employed part-time [%]",
+                "Females employed part-time [%]",
+                "Males employed irregular/marginal [%]",
+                "Females employed irregular/marginal [%]"
+            ),
+            "Manufacturing" = c(
+                sum(industry_sector == "Manufacturing", na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Manufacturing" & female == 1, na.rm = TRUE) /
+                     sum(industry_sector == "Manufacturing", na.rm = TRUE)) * 100,
+                    2
+                ),
+                median(years_of_education[industry_sector == "Manufacturing"], na.rm = TRUE),
+                min(years_of_education[industry_sector == "Manufacturing"], na.rm = TRUE),
+                max(years_of_education[industry_sector == "Manufacturing"], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Manufacturing" & female == 0], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Manufacturing" & female == 1], na.rm = TRUE),
+                median(age[industry_sector == "Manufacturing"], na.rm = TRUE),
+                min(age[industry_sector == "Manufacturing"], na.rm = TRUE),
+                max(age[industry_sector == "Manufacturing"], na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Manufacturing" & female == 0 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Manufacturing" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Manufacturing" & female == 1 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Manufacturing" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Manufacturing" & female == 0 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Manufacturing" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Manufacturing" & female == 1 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Manufacturing" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Manufacturing" & female == 0 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Manufacturing" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Manufacturing" & female == 1 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Manufacturing" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                )
+
+            ),
+            "Trade" = c(
+                sum(industry_sector == "Trade", na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Trade" & female == 1, na.rm = TRUE) /
+                     sum(industry_sector == "Trade", na.rm = TRUE)) * 100, 2
+                ),
+                median(years_of_education[industry_sector == "Trade"], na.rm = TRUE),
+                min(years_of_education[industry_sector == "Trade"], na.rm = TRUE),
+                max(years_of_education[industry_sector == "Trade"], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Trade" & female == 0], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Trade" & female == 1], na.rm = TRUE),
+                median(age[industry_sector == "Trade"], na.rm = TRUE),
+                min(age[industry_sector == "Trade"], na.rm = TRUE),
+                max(age[industry_sector == "Trade"], na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Trade" & female == 0 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Trade" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Trade" & female == 1 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Trade" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Trade" & female == 0 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Trade" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Trade" & female == 1 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Trade" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Trade" & female == 0 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Trade" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Trade" & female == 1 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Trade" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                )
+
+            ),
+            "Services" = c(
+                sum(industry_sector == "Services", na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Services" & female == 1, na.rm = TRUE) /
+                     sum(industry_sector == "Services", na.rm = TRUE)) * 100, 2
+                ),
+                median(years_of_education[industry_sector == "Services"], na.rm = TRUE),
+                min(years_of_education[industry_sector == "Services"], na.rm = TRUE),
+                max(years_of_education[industry_sector == "Services"], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Services" & female == 0], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Services" & female == 1], na.rm = TRUE),
+                median(age[industry_sector == "Services"], na.rm = TRUE),
+                min(age[industry_sector == "Services"], na.rm = TRUE),
+                max(age[industry_sector == "Services"], na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Services" & female == 0 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Services" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Services" & female == 1 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Services" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Services" & female == 0 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Services" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Services" & female == 1 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Services" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Services" & female == 0 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Services" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Services" & female == 1 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Services" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                )
+
+            ),
+            `Administration, Education & Health` = c(
+                sum(industry_sector == "Administration, Education & Health", na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Administration, Education & Health" & female == 1, na.rm = TRUE) /
+                     sum(industry_sector == "Administration, Education & Health", na.rm = TRUE)) * 100, 2
+                ),
+                median(years_of_education[industry_sector == "Administration, Education & Health"], na.rm = TRUE),
+                min(years_of_education[industry_sector == "Administration, Education & Health"], na.rm = TRUE),
+                max(years_of_education[industry_sector == "Administration, Education & Health"], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Administration, Education & Health" & female == 0], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Administration, Education & Health" & female == 1], na.rm = TRUE),
+                median(age[industry_sector == "Administration, Education & Health"], na.rm = TRUE),
+                min(age[industry_sector == "Administration, Education & Health"], na.rm = TRUE),
+                max(age[industry_sector == "Administration, Education & Health"], na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Administration, Education & Health" & female == 0 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Administration, Education & Health" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Administration, Education & Health" & female == 1 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Administration, Education & Health" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Administration, Education & Health" & female == 0 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Administration, Education & Health" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Administration, Education & Health" & female == 1 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Administration, Education & Health" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Administration, Education & Health" & female == 0 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Administration, Education & Health" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Administration, Education & Health" & female == 1 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Administration, Education & Health" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                )
+            ),
+            "Others" = c(
+                sum(industry_sector == "Others", na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Others" & female == 1, na.rm = TRUE) /
+                     sum(industry_sector == "Others", na.rm = TRUE)) * 100, 2
+                ),
+                median(years_of_education[industry_sector == "Others"], na.rm = TRUE),
+                min(years_of_education[industry_sector == "Others"], na.rm = TRUE),
+                max(years_of_education[industry_sector == "Others"], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Others" & female == 0], na.rm = TRUE),
+                median(years_of_education[industry_sector == "Others" & female == 1], na.rm = TRUE),
+                median(age[industry_sector == "Others"], na.rm = TRUE),
+                min(age[industry_sector == "Others"], na.rm = TRUE),
+                max(age[industry_sector == "Others"], na.rm = TRUE),
+                round(
+                    (sum(industry_sector == "Others" & female == 0 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Others" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Others" & female == 1 & employment_status == "Full-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Others" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Others" & female == 0 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Others" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Others" & female == 1 & employment_status == "Part-Time", na.rm = TRUE) /
+                     sum(industry_sector == "Others" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Others" & female == 0 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Others" & female == 0, na.rm = TRUE)) * 100, 
+                    2 
+                ),
+                round(
+                    (sum(industry_sector == "Others" & female == 1 & employment_status == "Irregular or Marginal", na.rm = TRUE) /
+                     sum(industry_sector == "Others" & female == 1, na.rm = TRUE)) * 100, 
+                    2 
+                )
+
+            )
+        )
+    ))
+}
+
+df_summary_by_sector <- create_summary_by_industry()
+write.csv(df_summary_by_sector, file = "./tables/df_summary_by_industry_sector.csv")
+
+# Filter based on salaries larger than 0
+df_working_salary_month <- df_working_population %>%
+    filter(!is.na(gross_salary_month) & gross_salary_month > 0)
+df_working_salary_year <- df_working_population %>%
+    filter(!is.na(gross_salary_year) & gross_salary_year > 0)
+
+# ---------- Plot salary distribution ----------#
+
+hist_from_df_column <- function(df, col_to_plot, col_label){
+    png(filename = paste0("./histograms/histogram_", col_to_plot, ".png"), width = 800, height = 600)
+    par(cex.lab = 1.7, cex.axis = 1.5, mar = c(5.1, 6, 4.1, 2.1) + 0.1) 
+
+
+    hist(df[[col_to_plot]],
+        main = paste("Histogram of", col_label),
+        xlab = col_label,
+        ylab = "Frequency",
+        col = "#818cf8",
+        border = "#312e81",
+        breaks = 15) 
+    grid()
+    par(cex.lab = 1, cex.axis = 1, mar = c(5.1, 4.1, 4.1, 2.1) + 0.1)
+    dev.off()
+}
+
+hist_from_df_column(df_working_salary_year, "gross_salary_year", "Yearly Salary [€]")
+hist_from_df_column(df_working_salary_month, "gross_salary_month", "Monthly Salary [€]")
+
+# ------------ Analyse  Skewness ------------- #
+library(e1071)
+# Check skewness in salary distributions
+skewness_value_salary_month <- skewness(df_working_salary_month$gross_salary_month, na.rm = TRUE)
+cat("Skewness of Gross Monthly Salary:", skewness_value_salary_month, "\n")
+skewness_value_salary_year <- skewness(df_working_population$gross_salary_year, na.rm = TRUE)
+cat("Skewness of Gross Yearly Salary:", skewness_value_salary_year, "\n")
+
+
+
+library(quantreg)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+vars_to_plot_names <- c("female1", "years_of_education")
+# Analyse each 10% quantile; addtionally 5% and 95% quantile
+taus_all <- c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95)
+
+analyse_coefficients <- function(){
+
+
+    # Fit the Quantile Regression model for all taus, include all relevant sectors.
+    model_qreg_all_year <- rq(gross_salary_year ~  female + age + years_of_education + employment_status + industry_sector,
+                            tau = taus_all,
+                            data = df_working_salary_year)
+
+    # Get the summary with bootstrapped standard errors
+    summary_qreg_all_year <- summary(model_qreg_all_year, se = "boot", R = 200)
+
+    # Extract and combine coefficients for plotting
+    coef_data_list <- list()
+
+    
+
+    cat("Extracting coefficients for plotting...\n")
+    for (i in seq_along(taus_all)) {
+    current_tau <- taus_all[i]
+    # Each element of summary_qreg_all_year is a summary object for a single tau
+    current_summary_table <- summary_qreg_all_year[[i]]$coefficients
+
+        for (var_name_raw in vars_to_plot_names) {
+            if (var_name_raw %in% rownames(current_summary_table)) {
+                row_data <- current_summary_table[var_name_raw, ]
+                
+                # Calculate 95% Confidence Intervals
+                lower_ci_val <- row_data["Value"] - 1.96 * row_data["Std. Error"]
+                upper_ci_val <- row_data["Value"] + 1.96 * row_data["Std. Error"]
+
+                coef_data_list[[length(coef_data_list) + 1]] <- data.frame(
+                    Tau = current_tau,
+                    Variable = var_name_raw, # Store raw name initially
+                    Estimate = row_data["Value"],
+                    StdError = row_data["Std. Error"],
+                    Lower_CI = lower_ci_val,
+                    Upper_CI = upper_ci_val,
+                    stringsAsFactors = FALSE
+                )
+            }
+        
+        }
+    }
+    return(coef_data_list)
+}
+
+coef_data_list <- analyse_coefficients()
+plot_df <- do.call(rbind, coef_data_list)
+
+create_coeficient_plots <- function(){
+    plot_df$Variable <- factor(plot_df$Variable,
+                            levels = vars_to_plot_names,
+                            labels = c("Female Coefficient",  "Years of Education Coefficient"))
+
+
+    final_plot <- ggplot(plot_df, aes(x = Tau, y = Estimate)) +
+    geom_line(linewidth = 0.8) +
+    geom_point(size = 2) +
+    geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.02, linewidth = 0.8, alpha = 0.6) +
+    geom_hline(yintercept = 0, linetype = "dotted", color = "red", linewidth = 0.8) +
+
+    facet_wrap(~ Variable,          
+                scales = "free_y",   
+                ncol = 1) +          
+    # ---------------------------------------------------------------
+
+    labs(
+        title = "Quantile Regression Coefficients Across Salary Quantiles",
+        subtitle = "For Female, and Years of Education (with 95% Confidence Intervals)",
+        x = "Quantile (tau)", 
+        y = "Estimated Coefficient (€)"
+    ) +
+    theme_minimal() +
+    # Plot styling
+    theme(
+        plot.title = element_text(face = "bold", size = 18, hjust = 0.5),
+        plot.subtitle = element_text(size = 14, hjust = 0.5),
+        axis.title.x = element_text(size = 16, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 16, margin = margin(r = 10)),
+        axis.text.x = element_text(size = 14),
+        axis.text.y = element_text(size = 14),
+        strip.text = element_text(size = 14, face = "bold"),
+        strip.background = element_rect(fill = "grey90", color = NA),
+        legend.position = "none"
+    )
+
+    print(final_plot)
+
+    ggsave("./plots/qr_coefficients_single_plot_custom_colors.png", plot = final_plot, width = 8, height = 10, units = "in", dpi = 300)
+}
+
+create_coeficient_plots()
+
+
+
+# ------------------ Quantile Regression to analyze -------------- #
+
+# Set taus: each 10% quantile
+taus_for_analysis <- c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
+
+# Convert to numeric levels to labels
+df_working_salary_year$female <- factor(df_working_salary_year$female, levels = c(0, 1), labels = c("Male", "Female"))
+
+typical_age <- round(mean(df_working_salary_year$age), 0)
+
+# Only looking at people employed in Full-Time
+typical_employment_status <- "Full-Time" 
+
+all_industries <- levels(df_working_salary_year$industry_sector)
+
+# Set education level for prediction to 20%, 50% and 80% quantile 
+education_levels <- c(
+    quantile(df_working_salary_year$years_of_education, probs = 0.2, na.rm = TRUE), 
+    quantile(df_working_salary_year$years_of_education, probs = 0.5, na.rm = TRUE), 
+    quantile(df_working_salary_year$years_of_education, probs = 0.8, na.rm = TRUE)
+)
+
+predict_salary_on_qr_without_education <- function(){
+    # Create the new dataframe for predictions
+    qr_prediction_data <- expand.grid(
+        female = factor(c("Male", "Female"), levels = levels(df_working_salary_year$female)),
+        employment_status = factor(typical_employment_status),
+        industry_sector = factor(all_industries, levels = levels(df_working_salary_year$industry_sector))
+    )
+
+    # predict salary for each tau
+    predicted_salaries_list <- list()
+    for (t in taus_for_analysis) {
+        # Conditional Quantile Regression model. 
+        # 
+        model_qr_single_tau <- rq(gross_salary_year ~ female + industry_sector + 
+                                    female:employment_status + female:industry_sector,
+                                    tau = t, data = df_working_salary_year)
+
+        
+        preds <- predict(model_qr_single_tau, newdata = qr_prediction_data)
+
+        predicted_salaries_list[[as.character(t)]] <- cbind(qr_prediction_data, Predicted_Salary = preds, Tau = t)
+    }
+
+    # Combine all predictions into a single dataframe
+    predicted_salaries_df <- do.call(rbind, predicted_salaries_list)
+
+    # Calculate the gender pay gap (Female - Male) for each scenario
+    gender_gap_df <- predicted_salaries_df %>%
+        group_by(Tau, industry_sector, employment_status) %>%
+        summarise(
+            Male_Salary = Predicted_Salary[female == "Male"],
+            Female_Salary = Predicted_Salary[female == "Female"],
+            Gender_Gap = Female_Salary - Male_Salary,
+            Relative_Gender_Gap = ifelse(Male_Salary != 0, (Gender_Gap / Male_Salary) * 100, NA),
+            .groups = 'drop'
+    )
+    return(gender_gap_df)
+}
+
+plot_theme <- function(){
+    return(theme(
+        plot.background = element_rect(fill = "white", color = NA), 
+        panel.background = element_rect(fill = "white", color = NA),
+
+        legend.position = "top",          
+        legend.justification = "left",    
+        legend.box.just = "left",         
+        legend.direction = "horizontal",  
+        legend.box.margin = margin(10, 0, 10, 0), 
+        legend.background = element_rect(fill = "grey90", color = NA),
+
+
+        # Text sizes (as previously set for readability)
+        plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+        plot.subtitle = element_text(size = 14, hjust = 0.5),
+        axis.title.x = element_text(size = 14, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 14, margin = margin(r = 10)),
+        axis.text.x = element_text(size = 14),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_text(face = "bold", size = 14),
+        legend.text = element_text(size = 12),
+
+        strip.text = element_text(size = 12, face = "bold"),
+        strip.background = element_rect(fill = "grey90", color = NA) 
+    ))
+}
+
+label_mapping <- c(
+        "Administration, Education & Health" = "Administration,\nEducation & Health",
+        "Manufacturing" = "Manufacturing",
+        "Trade" = "Trade",
+        "Services" = "Services",
+        "Others" = "Others"
+        )
+
+custom_industry_colors <- c(
+        "Administration,\nEducation & Health" = "#f59e0b",
+        "Manufacturing" = "#16a34a",
+        "Trade" = "#0ea5e9",
+        "Services" = "#ec4899"
+    )
+
+gender_gap_df <- predict_salary_on_qr_without_education()
+
+create_gender_gap_qr_plots_without_education <- function(){
+    # Label mapping to fit plots legend
+
+    gender_gap_df <- gender_gap_df %>%
+    mutate(industry_sector = factor(industry_sector,
+                                    levels = names(label_mapping),
+                                    labels = unname(label_mapping)))
+
+    # Don't plot others
+    gender_gap_df <- gender_gap_df %>%
+        filter(industry_sector != "Others")
+    
+    
+    plt <- ggplot(gender_gap_df, aes(x = Tau, y = Relative_Gender_Gap, color = industry_sector)) +
+        geom_line(aes(group = industry_sector), linewidth = 0.8) +
+        geom_point(size = 2) +
+        geom_hline(yintercept = 0, linetype = "dotted", color = "red", linewidth = 0.8) +
+        scale_color_manual(values = custom_industry_colors) +
+        labs(
+            title = "Relative gender pay gap across industries",
+            subtitle = paste0("By yearly salary quantile and employment status ",typical_employment_status),
+            x = "Quantile (tau)",
+            y = "Female - Male Salary Difference [%]",
+            color = "Industry Sector"
+        ) +
+        theme_minimal() +
+        plot_theme()
+        
+    ggsave(paste0("./line-plots/gender_gap_plot_relative_without_education.png"), plot = plt, width = 8, height = 6, units = "in", dpi = 300)
+    
+}
+
+create_gender_gap_qr_plots_without_education()
+
+
+predict_salary_on_qr_with_education <- function(){
+    # Create the new dataframe for predictions
+    qr_prediction_data <- expand.grid(
+        female = factor(c("Male", "Female"), levels = levels(df_working_salary_year$female)),
+        #age = typical_age,
+        years_of_education = education_levels,
+        employment_status = factor(typical_employment_status),
+        industry_sector = factor(all_industries, levels = levels(df_working_salary_year$industry_sector))
+    )
+
+    # predict salary for each tau
+    predicted_salaries_list <- list()
+    for (t in taus_for_analysis) {
+        # Conditional Quantile Regression model. 
+        # 
+        model_qr_single_tau <- rq(gross_salary_year ~ female + industry_sector + years_of_education + female:employment_status + 
+                                    female:industry_sector + female:years_of_education,
+                                    tau = t, data = df_working_salary_year)
+
+        
+        preds <- predict(model_qr_single_tau, newdata = qr_prediction_data)
+
+        predicted_salaries_list[[as.character(t)]] <- cbind(qr_prediction_data, Predicted_Salary = preds, Tau = t)
+    }
+
+    # Combine all predictions into a single dataframe
+    predicted_salaries_df <- do.call(rbind, predicted_salaries_list)
+
+    # Calculate the gender pay gap (Female - Male) for each scenario
+    gender_gap_df <- predicted_salaries_df %>%
+        group_by(Tau, industry_sector, employment_status, years_of_education) %>%
+        summarise(
+            Male_Salary = Predicted_Salary[female == "Male"],
+            Female_Salary = Predicted_Salary[female == "Female"],
+            Gender_Gap = Female_Salary - Male_Salary,
+            Relative_Gender_Gap = ifelse(Male_Salary != 0, (Gender_Gap / Male_Salary) * 100, NA),
+            .groups = 'drop'
+    )
+    return(gender_gap_df)
+}
+
+gender_gap_df <- predict_salary_on_qr_with_education()
+
+create_gender_gap_qr_plots_with_education <- function(){
+    # Label mapping to fit plots legend
+
+    gender_gap_df <- gender_gap_df %>%
+    mutate(industry_sector = factor(industry_sector,
+                                    levels = names(label_mapping),
+                                    labels = unname(label_mapping)))
+
+    # Don't plot Others
+    gender_gap_df <- gender_gap_df %>%
+        filter(industry_sector != "Others")
+    
+    
+    plt <- ggplot(gender_gap_df, aes(x = Tau, y = Relative_Gender_Gap, color = industry_sector)) +
+        geom_line(aes(group = industry_sector), linewidth = 0.8) +
+        geom_point(size = 2) +
+        geom_hline(yintercept = 0, linetype = "dotted", color = "red", linewidth = 0.8) +
+        scale_color_manual(values = custom_industry_colors) +
+
+        facet_wrap(~ years_of_education,
+                    labeller = labeller(years_of_education = function(x) paste0(x, " Years Education")),
+                    ncol = 3) +
+
+        labs(
+            title = "Relative Gender Pay Gap Across Industries",
+            subtitle = paste0("By yearly salary quantile, years of education and employment status ",typical_employment_status),
+            x = "Quantile (tau)",
+            y = "Female - Male Salary Difference [%]",
+            color = "Industry Sector"
+        ) +
+        theme_minimal() + # Start with a minimal theme as a base
+        plot_theme()
+
+    ggsave(paste0("./line-plots/gender_gap_plot_relative_with_education.png"), plot = plt, width = 8, height = 6, units = "in", dpi = 300)
+    
+}
+
+create_gender_gap_qr_plots_with_education()
+
 
 

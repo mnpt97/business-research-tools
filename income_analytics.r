@@ -167,7 +167,7 @@ df_info <- df %>%
         )
     )
 
-write.csv(df_info, file = "./tables/df_info.csv")
+write.csv(df_info, file = "./tables/df_info")
 
 
 
@@ -337,7 +337,6 @@ df_working_population$employment_status <- factor(
 
 df_working_population$industry_sector_string <- NULL
 df_working_population$employment_status_string <- NULL
-
 df_working_population$industry_sector <- as.factor(df_working_population$industry_sector)
 df_working_population$employment_status <- as.factor(df_working_population$employment_status)
 df_working_population$industry_sector <- relevel(df_working_population$industry_sector, ref="Administration, Education & Health")
@@ -611,6 +610,7 @@ df_working_salary_year_ln <- df_working_salary_year %>%
 
 hist_from_df_column <- function(df, col_to_plot){
     png(filename = paste0("./histograms/histogram_", col_to_plot, ".png"), width = 800, height = 600)
+    par(cex.lab = 1.5, cex.axis = 1.2)
 
     hist(df[[col_to_plot]],
         main = paste("Histogram of", col_to_plot),
@@ -620,6 +620,7 @@ hist_from_df_column <- function(df, col_to_plot){
         border = "black",
         breaks = 15) 
     grid()
+    par(cex.lab = 1, cex.axis = 1)
 
     dev.off()
 }
@@ -813,7 +814,7 @@ create_quantile_summary <- function(){
     return(summary_matrix)
 }
 
-#prediction_summary <- create_quantile_summary()
+prediction_summary <- create_quantile_summary()
 #
 ## Print the results
 #print("Summary at Different Taus:")
@@ -835,7 +836,7 @@ df_working_salary_year$industry_sector <- factor(df_working_salary_year$industry
 # -----------------------------------------------------------------------------------
 
 # --- Rest of your code for setting up prediction_data variables ---
-typical_age <- round(mean(df_working_salary_year$age), 0)
+typical_age <- 30#round(mean(df_working_salary_year$age), 0)
 
 # FIX 1: Use a valid employment_status level, e.g., "1" or the most frequent one
 # (If you want the most frequent, uncomment this line instead)
@@ -883,10 +884,11 @@ predicted_salaries_df <- do.call(rbind, predicted_salaries_list)
 gender_gap_df <- predicted_salaries_df %>%
   group_by(Tau, industry_sector, years_of_education, age, employment_status) %>%
   summarise(
-    # FIX 2: Filter by factor labels "Male" and "Female"
     Male_Salary = Predicted_Salary[female == "Male"],
     Female_Salary = Predicted_Salary[female == "Female"],
     Gender_Gap = Female_Salary - Male_Salary,
+    Relative_Gender_Gap = ifelse(Male_Salary != 0, (Gender_Gap / Male_Salary) * 100, NA),
+
     .groups = 'drop'
   )
 
@@ -945,45 +947,109 @@ gender_gap_df <- gender_gap_df %>%
                                   labels = unname(label_mapping)))
 
 create_plots <- function(){
-    for(edu in education_levels){
-        plt <- ggplot(filter(gender_gap_df, years_of_education == education_levels), aes(x = Tau, y = Gender_Gap, color = industry_sector)) +
-        geom_line() +
-        geom_point() +
-        geom_hline(yintercept = 0, linetype = "dotted", color = "red") +
+    gender_gap_df <- gender_gap_df %>%
+        filter(industry_sector != "Others")
+
+    plt <- ggplot(gender_gap_df, aes(x = Tau, y = Gender_Gap, color = industry_sector)) +
+        geom_line(aes(group = industry_sector), linewidth = 0.8) +
+        geom_point(size = 2) +
+        geom_hline(yintercept = 0, linetype = "dotted", color = "red", linewidth = 0.8) +
+
+        facet_wrap(~ years_of_education,
+                    labeller = labeller(years_of_education = function(x) paste0(x, " Years Education")),
+                    ncol = 3) +
+
         labs(
-            title = "Gender Pay Gap for 12 Years Education Across Industries",
+            title = "Gender Pay Gap Across Industries\nby Education Level and Salary Quantile",
             subtitle = paste0("At age ", typical_age, " and employment status '", typical_employment_status, "'"),
             x = "Quantile (tau)",
-            y = "Female - Male Salary Difference (€)",
+            y = "Female - Male Salary Difference [€]",
             color = "Industry Sector"
         ) +
+        theme_minimal() + # Start with a minimal theme as a base
         theme(
-            # Plot Title
-            plot.title = element_text(face = "bold", size = 16, hjust = 0.5), # Increased size and centered
-            # Plot Subtitle
-            plot.subtitle = element_text(size = 14, hjust = 0.5), # Increased size and centered
+            # Set plot and panel background to white
+            plot.background = element_rect(fill = "white", color = NA), # Overall plot background
+            panel.background = element_rect(fill = "white", color = NA), # Background of the plotting area itself
 
-            # Axis Labels (titles)
-            axis.title.x = element_text(size = 16, margin = margin(t = 10)), # Increased size, added top margin
-            axis.title.y = element_text(size = 16, margin = margin(r = 10)), # Increased size, added right margin
+            # Legend Position and Layout
+            legend.position = "top",          # Place legend at the top
+            legend.justification = "left",    # Justify legend content to the left
+            legend.box.just = "left",         # Justify the entire legend box to the left
+            legend.direction = "horizontal",  # Arrange legend items horizontally
+            legend.box.margin = margin(10, 0, 10, 0), # Optional: Add some bottom margin to separate from plot
+            legend.background = element_rect(fill = "grey90", color = NA),
 
-            # Axis Ticks (numbers/labels on the axes)
-            axis.text.x = element_text(size = 14), # Increased size for X-axis ticks
-            axis.text.y = element_text(size = 14), # Increased size for Y-axis ticks
 
-            # Legend
-            legend.title = element_text(face = "bold", size = 14), # Increased size and bold for legend title
-            legend.text = element_text(size = 12), # Increased size for legend items
-            legend.position = "right",
-            legend.background = element_rect(fill = "grey70", color = NA)
+            # Text sizes (as previously set for readability)
+            plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+            plot.subtitle = element_text(size = 14, hjust = 0.5),
+            axis.title.x = element_text(size = 14, margin = margin(t = 10)),
+            axis.title.y = element_text(size = 14, margin = margin(r = 10)),
+            axis.text.x = element_text(size = 14),
+            axis.text.y = element_text(size = 14),
+            legend.title = element_text(face = "bold", size = 14),
+            legend.text = element_text(size = 12),
+
+            # Facet strip text (labels above each small plot)
+            strip.text = element_text(size = 12, face = "bold"),
+            strip.background = element_rect(fill = "grey90", color = NA) # Background for facet labels
         )
+    ggsave(paste0("./line-plots/gender_gap_plot_absolute_", typical_age, ".png"), plot = plt, width = 8, height = 6, units = "in", dpi = 300)
+    
+    plt <- ggplot(gender_gap_df, aes(x = Tau, y = Relative_Gender_Gap, color = industry_sector)) +
+        geom_line(aes(group = industry_sector), linewidth = 0.8) +
+        geom_point(size = 2) +
+        geom_hline(yintercept = 0, linetype = "dotted", color = "red", linewidth = 0.8) +
 
-        ggsave("gender_gap_plot_reduced_height2.png", plot = plt, width = 8, height = 5, units = "in", dpi = 300)
-    }
+        facet_wrap(~ years_of_education,
+                    labeller = labeller(years_of_education = function(x) paste0(x, " Years Education")),
+                    ncol = 3) +
+
+        labs(
+            title = "Relative Gender Pay Gap Across Industries\nby Education Level and Salary Quantile",
+            subtitle = paste0("At age ", typical_age, " and employment status '", typical_employment_status, "'"),
+            x = "Quantile (tau)",
+            y = "Female - Male Salary Difference [%]",
+            color = "Industry Sector"
+        ) +
+        theme_minimal() + # Start with a minimal theme as a base
+        theme(
+            # Set plot and panel background to white
+            plot.background = element_rect(fill = "white", color = NA), # Overall plot background
+            panel.background = element_rect(fill = "white", color = NA), # Background of the plotting area itself
+
+            # Legend Position and Layout
+            legend.position = "top",          # Place legend at the top
+            legend.justification = "left",    # Justify legend content to the left
+            legend.box.just = "left",         # Justify the entire legend box to the left
+            legend.direction = "horizontal",  # Arrange legend items horizontally
+            legend.box.margin = margin(10, 0, 10, 0), # Optional: Add some bottom margin to separate from plot
+            legend.background = element_rect(fill = "grey90", color = NA),
+
+
+            # Text sizes (as previously set for readability)
+            plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+            plot.subtitle = element_text(size = 14, hjust = 0.5),
+            axis.title.x = element_text(size = 14, margin = margin(t = 10)),
+            axis.title.y = element_text(size = 14, margin = margin(r = 10)),
+            axis.text.x = element_text(size = 14),
+            axis.text.y = element_text(size = 14),
+            legend.title = element_text(face = "bold", size = 14),
+            legend.text = element_text(size = 12),
+
+            # Facet strip text (labels above each small plot)
+            strip.text = element_text(size = 12, face = "bold"),
+            strip.background = element_rect(fill = "grey90", color = NA) # Background for facet labels
+        )
+    ggsave(paste0("./line-plots/gender_gap_plot_relative_", typical_age, ".png"), plot = plt, width = 8, height = 6, units = "in", dpi = 300)
+    
 }
 
-gender_gap_df <- gender_gap_df %>%
-    filter(industry_sector != "Others")
+create_plots()
+
+
+
 
 # Or plot for a specific education level across industries
 #plt <- ggplot(filter(gender_gap_df, years_of_education == education_levels), aes(x = Tau, y = Gender_Gap, color = industry_sector)) +
@@ -1062,7 +1128,7 @@ plt <- ggplot(gender_gap_df, aes(x = Tau, y = Gender_Gap, color = industry_secto
     strip.background = element_rect(fill = "grey90", color = NA) # Background for facet labels
   )
 
-ggsave("gender_gap_plot_reduced_height2.png", plot = plt, width = 8, height = 6, units = "in", dpi = 300)
+#ggsave("gender_gap_plot_reduced_height2.png", plot = plt, width = 8, height = 6, units = "in", dpi = 300)
 
 
 # 4. Initialize a list to store the results for the 'female' coefficient
