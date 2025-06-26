@@ -26,6 +26,7 @@ df$subjective_life_satisfaction <- as.numeric(df$subjective_life_satisfaction)
 condition_month_salary <- (!is.na(df$gross_salary_year) & df$gross_salary_year > 0 & df$gross_salary_year / 12 > df$gross_salary_month)
 df[condition_month_salary, "gross_salary_month"] <- df[condition_month_salary, "gross_salary_year"] / 12
 
+print(head(df))
 
 # Helper function to calcluate the mean and format it to "%"
 mean_to_per <- function(value){
@@ -622,112 +623,14 @@ skewness_value_salary_year <- skewness(df_working_population$gross_salary_year, 
 cat("Skewness of Gross Yearly Salary:", skewness_value_salary_year, "\n")
 
 
+# Necessary Libraries
 
 library(quantreg)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
 
-vars_to_plot_names <- c("female1", "years_of_education")
-# Analyse each 10% quantile; addtionally 5% and 95% quantile
-taus_all <- c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95)
-
-analyse_coefficients <- function(){
-
-
-    # Fit the Quantile Regression model for all taus, include all relevant sectors.
-    model_qreg_all_year <- rq(gross_salary_year ~  female + age + years_of_education + employment_status + industry_sector,
-                            tau = taus_all,
-                            data = df_working_salary_year)
-
-    # Get the summary with bootstrapped standard errors
-    summary_qreg_all_year <- summary(model_qreg_all_year, se = "boot", R = 200)
-
-    # Extract and combine coefficients for plotting
-    coef_data_list <- list()
-
-    
-
-    cat("Extracting coefficients for plotting...\n")
-    for (i in seq_along(taus_all)) {
-    current_tau <- taus_all[i]
-    # Each element of summary_qreg_all_year is a summary object for a single tau
-    current_summary_table <- summary_qreg_all_year[[i]]$coefficients
-
-        for (var_name_raw in vars_to_plot_names) {
-            if (var_name_raw %in% rownames(current_summary_table)) {
-                row_data <- current_summary_table[var_name_raw, ]
-                
-                # Calculate 95% Confidence Intervals
-                lower_ci_val <- row_data["Value"] - 1.96 * row_data["Std. Error"]
-                upper_ci_val <- row_data["Value"] + 1.96 * row_data["Std. Error"]
-
-                coef_data_list[[length(coef_data_list) + 1]] <- data.frame(
-                    Tau = current_tau,
-                    Variable = var_name_raw, # Store raw name initially
-                    Estimate = row_data["Value"],
-                    StdError = row_data["Std. Error"],
-                    Lower_CI = lower_ci_val,
-                    Upper_CI = upper_ci_val,
-                    stringsAsFactors = FALSE
-                )
-            }
-        
-        }
-    }
-    return(coef_data_list)
-}
-
-coef_data_list <- analyse_coefficients()
-plot_df <- do.call(rbind, coef_data_list)
-
-create_coeficient_plots <- function(){
-    plot_df$Variable <- factor(plot_df$Variable,
-                            levels = vars_to_plot_names,
-                            labels = c("Female Coefficient",  "Years of Education Coefficient"))
-
-
-    final_plot <- ggplot(plot_df, aes(x = Tau, y = Estimate)) +
-    geom_line(linewidth = 0.8) +
-    geom_point(size = 2) +
-    geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.02, linewidth = 0.8, alpha = 0.6) +
-    geom_hline(yintercept = 0, linetype = "dotted", color = "red", linewidth = 0.8) +
-
-    facet_wrap(~ Variable,          
-                scales = "free_y",   
-                ncol = 1) +          
-    # ---------------------------------------------------------------
-
-    labs(
-        title = "Quantile Regression Coefficients Across Salary Quantiles",
-        subtitle = "For Female, and Years of Education (with 95% Confidence Intervals)",
-        x = "Quantile (tau)", 
-        y = "Estimated Coefficient (€)"
-    ) +
-    theme_minimal() +
-    # Plot styling
-    theme(
-        plot.title = element_text(face = "bold", size = 18, hjust = 0.5),
-        plot.subtitle = element_text(size = 14, hjust = 0.5),
-        axis.title.x = element_text(size = 16, margin = margin(t = 10)),
-        axis.title.y = element_text(size = 16, margin = margin(r = 10)),
-        axis.text.x = element_text(size = 14),
-        axis.text.y = element_text(size = 14),
-        strip.text = element_text(size = 14, face = "bold"),
-        strip.background = element_rect(fill = "grey90", color = NA),
-        legend.position = "none"
-    )
-
-    print(final_plot)
-
-    ggsave("./plots/qr_coefficients_single_plot_custom_colors.png", plot = final_plot, width = 8, height = 10, units = "in", dpi = 300)
-}
-
-create_coeficient_plots()
-
-
-
-# ------------------ Quantile Regression to analyze -------------- #
+# ------------------ Quantile Regression across industry sectors-------------- #
 
 # Set taus: each 10% quantile
 taus_for_analysis <- c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
@@ -749,10 +652,12 @@ education_levels <- c(
     quantile(df_working_salary_year$years_of_education, probs = 0.8, na.rm = TRUE)
 )
 
-predict_salary_on_qr_without_education <- function(){
+predict_salary_on_qr <- function(years_of_education_level){
     # Create the new dataframe for predictions
     qr_prediction_data <- expand.grid(
         female = factor(c("Male", "Female"), levels = levels(df_working_salary_year$female)),
+        age = typical_age,
+        years_of_education = years_of_education_level,
         employment_status = factor(typical_employment_status),
         industry_sector = factor(all_industries, levels = levels(df_working_salary_year$industry_sector))
     )
@@ -762,8 +667,8 @@ predict_salary_on_qr_without_education <- function(){
     for (t in taus_for_analysis) {
         # Conditional Quantile Regression model. 
         # 
-        model_qr_single_tau <- rq(gross_salary_year ~ female + industry_sector + 
-                                    female:employment_status + female:industry_sector,
+        model_qr_single_tau <- rq(gross_salary_year ~ female + industry_sector + employment_status + age + years_of_education +
+                                    female:industry_sector + female:employment_status + female:age + female:years_of_education,
                                     tau = t, data = df_working_salary_year)
 
         
@@ -785,9 +690,10 @@ predict_salary_on_qr_without_education <- function(){
             Relative_Gender_Gap = ifelse(Male_Salary != 0, (Gender_Gap / Male_Salary) * 100, NA),
             .groups = 'drop'
     )
-    return(gender_gap_df)
+    return(predicted_salaries_df)
 }
 
+# Plot Theming
 plot_theme <- function(){
     return(theme(
         plot.background = element_rect(fill = "white", color = NA), 
@@ -816,6 +722,7 @@ plot_theme <- function(){
     ))
 }
 
+# Label mapping for improved styling in plot png
 label_mapping <- c(
         "Administration, Education & Health" = "Administration,\nEducation & Health",
         "Manufacturing" = "Manufacturing",
@@ -831,7 +738,15 @@ custom_industry_colors <- c(
         "Services" = "#ec4899"
     )
 
-gender_gap_df <- predict_salary_on_qr_without_education()
+# Group prediction by Tau and industry sector
+gender_gap_df <- predict_salary_on_qr(education_levels[1]) %>%
+        group_by(Tau, industry_sector) %>%
+        summarise(
+            Male_Salary = Predicted_Salary[female == "Male"],
+            Female_Salary = Predicted_Salary[female == "Female"],
+            Gender_Gap = Female_Salary - Male_Salary,
+            Relative_Gender_Gap = ifelse(Male_Salary != 0, (Gender_Gap / Male_Salary) * 100, NA),
+            .groups = 'drop')
 
 create_gender_gap_qr_plots_without_education <- function(){
     # Label mapping to fit plots legend
@@ -867,38 +782,9 @@ create_gender_gap_qr_plots_without_education <- function(){
 
 create_gender_gap_qr_plots_without_education()
 
-
-predict_salary_on_qr_with_education <- function(){
-    # Create the new dataframe for predictions
-    qr_prediction_data <- expand.grid(
-        female = factor(c("Male", "Female"), levels = levels(df_working_salary_year$female)),
-        #age = typical_age,
-        years_of_education = education_levels,
-        employment_status = factor(typical_employment_status),
-        industry_sector = factor(all_industries, levels = levels(df_working_salary_year$industry_sector))
-    )
-
-    # predict salary for each tau
-    predicted_salaries_list <- list()
-    for (t in taus_for_analysis) {
-        # Conditional Quantile Regression model. 
-        # 
-        model_qr_single_tau <- rq(gross_salary_year ~ female + industry_sector + years_of_education + female:employment_status + 
-                                    female:industry_sector + female:years_of_education,
-                                    tau = t, data = df_working_salary_year)
-
-        
-        preds <- predict(model_qr_single_tau, newdata = qr_prediction_data)
-
-        predicted_salaries_list[[as.character(t)]] <- cbind(qr_prediction_data, Predicted_Salary = preds, Tau = t)
-    }
-
-    # Combine all predictions into a single dataframe
-    predicted_salaries_df <- do.call(rbind, predicted_salaries_list)
-
-    # Calculate the gender pay gap (Female - Male) for each scenario
-    gender_gap_df <- predicted_salaries_df %>%
-        group_by(Tau, industry_sector, employment_status, years_of_education) %>%
+# Group prediction by Tau, industry sector and years of education
+gender_gap_df <- predict_salary_on_qr(education_levels) %>%
+        group_by(Tau, industry_sector,  years_of_education) %>%
         summarise(
             Male_Salary = Predicted_Salary[female == "Male"],
             Female_Salary = Predicted_Salary[female == "Female"],
@@ -906,10 +792,8 @@ predict_salary_on_qr_with_education <- function(){
             Relative_Gender_Gap = ifelse(Male_Salary != 0, (Gender_Gap / Male_Salary) * 100, NA),
             .groups = 'drop'
     )
-    return(gender_gap_df)
-}
 
-gender_gap_df <- predict_salary_on_qr_with_education()
+write.csv(gender_gap_df,file = "./tables/qr_all.csv")
 
 create_gender_gap_qr_plots_with_education <- function(){
     # Label mapping to fit plots legend
@@ -949,6 +833,3 @@ create_gender_gap_qr_plots_with_education <- function(){
 }
 
 create_gender_gap_qr_plots_with_education()
-
-
-
